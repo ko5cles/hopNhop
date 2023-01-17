@@ -20,7 +20,6 @@ void main()
     pos = vec3(modelMatrix * vec4(position, 1.0));
     gl_Position = projMatrix * viewMatrix *vec4(pos, 1.0);
     pos_lightspace=lightSpaceMatrix*vec4(pos,1.0);
-    //gl_Position=pos_lightspace;
     n = transpose(inverse(mat3(modelMatrix))) * normal;
     tcoord=texcoord;
 }

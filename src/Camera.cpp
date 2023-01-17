@@ -16,14 +16,14 @@ void Camera::Update(const HopObject &hop){
 
 void Camera::Rise(float dt) {
     if(dt<0){
-        //if(CameraRadiusV<=0) return;
+        if(CameraRadiusV<=0) return;
     }
     CameraRadiusV+=CAMERA_SPEED*dt;
 }
 
 void Camera::Zoom(float dt) {
     if(dt>0){
-        //if(CameraRadiusH<=0.1) return;
+        if(CameraRadiusH<=0.1) return;
     }
     CameraRadiusH-=CAMERA_SPEED*dt;
 }

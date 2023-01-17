@@ -8,8 +8,8 @@ const float COMPRESS_SPEED=0.1;
 HopObject::HopObject():GameObject(),State{HOP_STATIC} {
     Height=this->Size.z;
 };
-HopObject::HopObject(GameObject& support, glm::vec3 pos, glm::vec3 size,Texture texture,glm::vec3 color, glm::vec3 velocity)
-:GameObject(pos,size,texture,color, velocity),State{HOP_STATIC}, Support{support},Height{size.z} {};
+HopObject::HopObject(GameObject& support, glm::vec3 pos, glm::vec3 size,Texture texture)
+:GameObject(pos,size,texture),State{HOP_STATIC}, Support{support},Height{size.z} {};
 
 void HopObject::Compress(float dt) {
     if(this->Size.z>this->Height/2.f){
@@ -17,6 +17,7 @@ void HopObject::Compress(float dt) {
         this->Size.z=this->Height/2.f>z?this->Height/2.f:z;
         this->Position.z=this->Support.Position.z+this->Support.Size.z/2.f+this->Size.z/2.f;
     }
+    this->UpdateModelMatrix();
 }
 
 void HopObject::Expand(float dt) {
@@ -24,6 +25,7 @@ void HopObject::Expand(float dt) {
         float z=Size.z+dt*0.25f;
         this->Size.z=z<this->Height?z:this->Height;
     }
+    this->UpdateModelMatrix();
 }
 
 glm::vec3 HopObject::SetInitialSpeed(glm::vec3 direction) {
@@ -36,6 +38,7 @@ glm::vec3 HopObject::SetInitialSpeed(glm::vec3 direction) {
 glm::vec3 HopObject::Move(float dt) {
     this->Position+=this->Velocity*dt;
     this->Velocity.z-=9.8f*dt;
+    this->UpdateModelMatrix();
     return this->Position;
 }
 
@@ -43,6 +46,7 @@ void HopObject::Reset(glm::vec3 pos, glm::vec3 velocity) {
     this->Position=pos;
     this->Velocity=velocity;
     this->State=HOP_STATIC;
+    this->UpdateModelMatrix();
 }
 
 void HopObject::Rotate(float dt) {
@@ -51,4 +55,13 @@ void HopObject::Rotate(float dt) {
     else if(this->Rotation<-360) this->Rotation+=360;
     glm::mat3 rot=glm::rotate(glm::mat4(1.f),glm::radians(this->Rotation),glm::vec3(0.f,0.f,1.f));
     this->Front=rot*this->InitialFront;
+    this->UpdateModelMatrix();
+}
+
+void HopObject::UpdateModelMatrix() {
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, this->Position);
+    model = glm::rotate(model, glm::radians(this->Rotation), glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
+    model = glm::scale(model, this->Size);
+    this->modelMatrix=model;
 }

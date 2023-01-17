@@ -7,16 +7,20 @@ BoxRenderer::BoxRenderer(Shader& sha)
 {
     this->sha = sha;
     this->initRenderData();
+
 }
 
 BoxRenderer::~BoxRenderer()
 {
     glDeleteVertexArrays(1, &this->boxVAO);
+    glDeleteBuffers(1, &this->boxVBO);
 }
 
 void BoxRenderer::DrawBox(Texture &texture, Texture& depthMap,glm::mat4 light,glm::vec3 camPos, glm::mat4 viewMatrix, glm::mat4 projMatrix, glm::vec3 position, glm::vec3 color, glm::vec3 size, float rotate)
 {
     // prepare transformations
+    glEnable(GL_CULL_FACE);
+
     this->sha.Use();
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, position);  // first transldate (transformations are: scale happens first, then rotation, and then final translation happens; reversed order)
@@ -44,22 +48,21 @@ void BoxRenderer::DrawBox(Texture &texture, Texture& depthMap,glm::mat4 light,gl
     this->sha.SetInteger("cube_texture",0);
     this->sha.SetInteger("shadow_map",1);
 
-    glBindVertexArray(this->boxVAO);
+    glBindVertexArray(BoxRenderer::boxVAO);
     glDrawArrays(GL_TRIANGLES,0,36);
     glBindVertexArray(0);
+    glDisable(GL_CULL_FACE);
 }
 
 void BoxRenderer::initRenderData()
 {
-    // configure VAO/VBO
-    unsigned int VBO;
     float vertices[] = {
             -0.5f, -0.5f, -0.5f,  0,0,-1,0.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  0,0,-1,1.0f, 1.0f,
             0.5f, -0.5f, -0.5f,  0,0,-1, 1.0f, 0.0f,
             0.5f,  0.5f, -0.5f,  0,0,-1,1.0f, 1.0f,
-            0.5f,  0.5f, -0.5f,  0,0,-1,1.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f, 0,0,-1, 0.0f, 1.0f,
             -0.5f, -0.5f, -0.5f,  0,0,-1,0.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f, 0,0,-1, 0.0f, 1.0f,
 
             -0.5f, -0.5f,  0.5f,  0,0,1,0.0f, 0.0f,
             0.5f, -0.5f,  0.5f,  0,0,1,1.0f, 0.0f,
@@ -76,11 +79,11 @@ void BoxRenderer::initRenderData()
             -0.5f,  0.5f,  0.5f,  -1,0,0,1.0f, 0.0f,
 
             0.5f,  0.5f,  0.5f,  1,0,0,1.0f, 0.0f,
+            0.5f, -0.5f, -0.5f,  1,0,0,0.0f, 1.0f,
             0.5f,  0.5f, -0.5f,  1,0,0,1.0f, 1.0f,
             0.5f, -0.5f, -0.5f,  1,0,0,0.0f, 1.0f,
-            0.5f, -0.5f, -0.5f,  1,0,0,0.0f, 1.0f,
-            0.5f, -0.5f,  0.5f,  1,0,0,0.0f, 0.0f,
             0.5f,  0.5f,  0.5f,  1,0,0,1.0f, 0.0f,
+            0.5f, -0.5f,  0.5f,  1,0,0,0.0f, 0.0f,
 
             -0.5f, -0.5f, -0.5f,  0,-1,0,0.0f, 1.0f,
             0.5f, -0.5f, -0.5f,  0,-1,0,1.0f, 1.0f,
@@ -90,19 +93,18 @@ void BoxRenderer::initRenderData()
             -0.5f, -0.5f, -0.5f,  0,-1,0,0.0f, 1.0f,
 
             -0.5f,  0.5f, -0.5f,  0,1,0,0.0f, 1.0f,
+            0.5f,  0.5f,  0.5f,  0,1,0,1.0f, 0.0f,
             0.5f,  0.5f, -0.5f,  0,1,0,1.0f, 1.0f,
             0.5f,  0.5f,  0.5f,  0,1,0,1.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  0,1,0,1.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  0,1,0,0.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  0,1,0,0.0f, 1.0f
+            -0.5f,  0.5f, -0.5f,  0,1,0,0.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  0,1,0,0.0f, 0.0f
     };
 
     glGenVertexArrays(1, &this->boxVAO);
     glBindVertexArray(this->boxVAO);
-    glEnableVertexAttribArray(0);
 
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glGenBuffers(1, &this->boxVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, this->boxVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);

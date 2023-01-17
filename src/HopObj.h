@@ -15,17 +15,18 @@ public:
     GameObject Support;
     float Height;
     const glm::vec3 InitialFront=glm::vec3(1.f,0.f,0.f);
+    glm::vec3 Velocity;
     glm::vec3 Front=InitialFront;
     //constructor
     HopObject();
-    HopObject(GameObject& Support, glm::vec3 pos, glm::vec3 size, Texture texture, glm::vec3 color=glm::vec3(1.f), glm::vec3 velocity=glm::vec3(0.f));
+    HopObject(GameObject& Support, glm::vec3 pos, glm::vec3 size, Texture texture);
     void Compress(float dt);
     void Expand(float dt);
     glm::vec3 SetInitialSpeed(glm::vec3 direction);
     glm::vec3 Move(float dt);
     void Reset(glm::vec3 pos, glm::vec3 velocity);
     void Rotate(float dt);
-
+    void UpdateModelMatrix();
 };
 
 #endif //ASSIGNMENT4TEX_HOPOBJ_H

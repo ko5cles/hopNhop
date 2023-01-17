@@ -88,6 +88,7 @@ int main()
 
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
 
     // initialize the game
     hopnhop.Init();

@@ -84,7 +84,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, unsigned i
             {
                 glm::vec3 pos(unit_width * x, unit_height * y, 0);
                 glm::vec3 size(unit_width, unit_height, 1);
-                GameObject obj(pos, size, Resources::GetTexture("gift_wrap"), glm::vec3(1.f, 1.f, 1.f));
+                GameObject obj(pos, size, Resources::GetTexture("gift_wrap"));
                 obj.IsSolid = true;
                 this->End=obj;
                 this->Cubes.push_back(obj);

@@ -70,5 +70,5 @@ file(GLOB GLSL
 "${CMAKE_CURRENT_SOURCE_DIR}/shader/*.glsl"
 )
 
-add_executable(${PROJECT_NAME}_bin ${SOURCES} ${HEADERS} ${GLSL} src/Game.h src/Game.cpp src/Resources.h src/Resources.cpp src/Shader.h src/Shader.cpp src/Texture.h src/Texture.cpp src/stb_image.h src/BoxRenderer.h src/BoxRenderer.cpp src/GameObj.h src/GameObj.cpp src/GameLev.h src/GameLev.cpp src/HopObj.h src/HopObj.cpp src/Camera.h src/Camera.cpp src/EnvironmentRenderer.h src/EnvironmentRenderer.cpp src/ShadowRenderer.h src/ShadowRender.cpp src/QuadRenderer.h src/QuadRenderer.cpp)
+add_executable(${PROJECT_NAME}_bin ${SOURCES} ${HEADERS} ${GLSL} src/Game.h src/Game.cpp src/Resources.h src/Resources.cpp src/Shader.h src/Shader.cpp src/Texture.h src/Texture.cpp src/stb_image.h src/BoxRenderer.h src/BoxRenderer.cpp src/GameObj.h src/GameObj.cpp src/GameLev.h src/GameLev.cpp src/HopObj.h src/HopObj.cpp src/Camera.h src/Camera.cpp src/EnvironmentRenderer.h src/EnvironmentRenderer.cpp src/ShadowRenderer.h src/ShadowRender.cpp src/QuadRenderer.h src/QuadRenderer.cpp src/BoxOutliner.h src/BoxOutliner.cpp)
 target_link_libraries(${PROJECT_NAME}_bin ${LIBRARIES} ${OPENGL_LIBRARIES})

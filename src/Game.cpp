@@ -6,11 +6,14 @@
 #include "ShadowRenderer.h"
 #include "EnvironmentRenderer.h"
 #include "QuadRenderer.h"
+#include "BoxOutliner.h"
 
 BoxRenderer* renderer;
 EnvironmentRenderer* erenderer;
 ShadowRenderer* srenderer;
 QuadRenderer* qrenderer;
+BoxOutliner* boutliner;
+
 HopObject *Player;
 Camera* camera;
 
@@ -37,6 +40,9 @@ void Game::Init()
 
     Resources::LoadShader("quad_vertex.glsl","quad_fragment.glsl","quad");
     qrenderer= new QuadRenderer(Resources::GetShader("quad"));
+
+    Resources::LoadShader("outline_vertex.glsl","outline_fragment.glsl","outliner");
+    boutliner=new BoxOutliner(Resources::GetShader("outliner"));
 
     Resources::LoadTexture("wood_container.jpeg",false,"wood_container");
     Resources::LoadTexture("block_solid.png",false,"block_solid");
@@ -121,8 +127,9 @@ void Game::ProcessInput(float dt)
 
 void Game::Render()
 {
-
   if (this->State==GAME_ACTIVE){
+      glEnable(GL_DEPTH_TEST);
+
       unsigned int depthMapFBO;
       glGenFramebuffers(1, &depthMapFBO);
 
@@ -133,8 +140,8 @@ void Game::Render()
                    SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
       glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap.ID, 0);
@@ -163,15 +170,30 @@ void Game::Render()
 
 // 2. then render scene as normal with shadow mapping (using depth map)
       glViewport(0, 0, 1600, 1200);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
       //qrenderer->Draw(depthMap);
 
+      glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+      glStencilMask(0x00);
       this->Levels[this->Level].Draw(*renderer,depthMap,lightProjection*lightView,camera->CameraPos,camera->GetViewMatrix(),camera->GetProjMatrix());
+
+      glStencilFunc(GL_ALWAYS, 1, 0xFF);
+      glStencilMask(0xFF);
       Player->Draw(*renderer,depthMap, lightProjection*lightView,camera->CameraPos,camera->GetViewMatrix(),camera->GetProjMatrix());
+
+      glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+      glStencilMask(0x00);
+      glDisable(GL_DEPTH_TEST);
+      Player->Draw(1.1,glm::vec3(1,1,1),*boutliner,camera->GetViewMatrix(),camera->GetProjMatrix());
+
+      glStencilMask(0xFF);
+      glStencilFunc(GL_ALWAYS, 1, 0xFF);
+      glEnable(GL_DEPTH_TEST);
+
       glDeleteTextures(1,&depthMap.ID);
   }
-  //Resources::GetShader("cubemap").Use();
-  //erenderer->Draw(Resources::GetTexture("PondWinter"),camera->CameraPos,camera->GetViewMatrix(),camera->GetProjMatrix());
+  Resources::GetShader("cubemap").Use();
+  erenderer->Draw(Resources::GetTexture("PondWinter"),camera->CameraPos,camera->GetViewMatrix(),camera->GetProjMatrix());
 }
 
 //assume the bottom of the hop object is always a square

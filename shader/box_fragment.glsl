@@ -18,11 +18,21 @@ float ShadowCalculation(vec4 pos_lightspace)
 {
     vec3 projCoords = pos_lightspace.xyz / pos_lightspace.w;
     projCoords = projCoords * 0.5 + 0.5;
-    float closestDepth = texture(shadow_map, projCoords.xy).r;
+    if(projCoords.z>1) return 0;
     float currentDepth = projCoords.z;
+    float bias = max(0.01 * (1.0 - dot(normalize(n), light_pos_0-pos)), 0.001);
 
-    if(currentDepth-closestDepth>0.001) return 1;
-    else return 0;
+    float shadow=0;
+    vec2 pixel_size=1/textureSize(shadow_map,0);
+    for(int x=-1;x<2;x++){
+        for(int y=-1; y<2;y++){
+            float closestDepth = texture(shadow_map, projCoords.xy+pixel_size*vec2(x,y)).r;
+            shadow+=(currentDepth-bias>closestDepth?1:0);
+        }
+    }
+    shadow/=9;
+    return shadow;
+
 }
 
 void main()
@@ -40,19 +50,7 @@ void main()
         spec=pow(angle,64);
     }
     vec3 dcolor=vec3(texture(cube_texture,tcoord));
-    vec3 color=0.15*vec3(1.f)+(1-shadow)*(lamb*dcolor+spec*dcolor);
+    vec3 color=0.2*(vec3(1.f)+lamb*dcolor)+(1-shadow)*(spec*dcolor+lamb*dcolor);
 
-    vec3 L_1=normalize(light_pos_1-pos);
-    float lamb_1=max(dot(N,L_1),0);
-    float spec_1=0;
-    if(lamb_1>0){
-        vec3 R_1=reflect(-L_1,N);
-        vec3 V_1=normalize(cam_pos-light_pos_1);
-        float angle_1=max(dot(R_1,V_1),0);
-        spec_1=pow(angle_1,64);
-    }
-    vec3 color_1=0.15*vec3(1.f)+(lamb_1*dcolor+spec_1*dcolor);
-
-
-    fragcolor=vec4(0.8*color+0.2*color_1,1);
+    fragcolor=vec4(color,1);
 }

@@ -33,7 +33,6 @@ private:
     // loads and generates a shader from file
     static Shader loadShaderFromFile(const std::string& vShaderFile, const std::string& fShaderFile);
     // loads a single texture from file
-    static Texture loadTextureFromPPM(const char *file, bool alpha);
     static Texture loadTextureFromFile(const char *file, bool alpha);
     static Texture loadTextureCubeMapFromFile(const char *file, bool alpha);
 };

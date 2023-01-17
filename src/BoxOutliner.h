@@ -1,9 +1,9 @@
 //
-// Created by Ze Pan on 11/29/22.
+// Created by Ze Pan on 1/16/23.
 //
 
-#ifndef ASSIGNMENT4TEX_BOXRENDERER_H
-#define ASSIGNMENT4TEX_BOXRENDERER_H
+#ifndef ASSIGNMENT4TEX_BOXOUTLINER_H
+#define ASSIGNMENT4TEX_BOXOUTLINER_H
 
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
@@ -25,19 +25,15 @@
 #include "Texture.h"
 #include "Resources.h"
 
-const glm::vec3 light_pos_0=glm::vec3(-12,0,10);
-const glm::vec3 light_pos_1=glm::vec3 (13,5,10);
-
-class BoxRenderer{
+class BoxOutliner{
 public:
-    BoxRenderer(Shader& sha);
-    ~BoxRenderer();
-    void DrawBox(Texture &texture,Texture& depthmap, glm::mat4 light, glm::vec3 camPos, glm::mat4 viewMatrix, glm::mat4 projMatrix, glm::vec3 position,
-                 glm::vec3 color= glm::vec3(1.0f),glm::vec3 size = glm::vec3(1.0f), float rotate = 0.0f);
-    Shader sha;
+    BoxOutliner(Shader& Program);
+    ~BoxOutliner();
+    void DrawOutline(glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 projMatrix, glm::vec3 color= glm::vec3(1.0f));
+    Shader Program;
     unsigned int boxVAO;
     unsigned int boxVBO;
     void initRenderData();
 };
 
-#endif //ASSIGNMENT4TEX_BOXRENDERER_H
+#endif //ASSIGNMENT4TEX_BOXOUTLINER_H

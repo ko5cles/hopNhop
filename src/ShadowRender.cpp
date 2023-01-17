@@ -16,8 +16,9 @@ ShadowRenderer::~ShadowRenderer()
 
 void ShadowRenderer::DrawBox(Texture &texture,glm::vec3 camPos, glm::mat4 viewMatrix, glm::mat4 projMatrix, glm::vec3 position, glm::vec3 color, glm::vec3 size, float rotate)
 {
-    // prepare transformations
     this->sha.Use();
+
+    // prepare transformationszsszx
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, position);  // first transldate (transformations are: scale happens first, then rotation, and then final translation happens; reversed order)
     model = glm::rotate(model, glm::radians(rotate), glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
@@ -27,6 +28,7 @@ void ShadowRenderer::DrawBox(Texture &texture,glm::vec3 camPos, glm::mat4 viewMa
 
     glBindVertexArray(this->boxVAO);
     glDrawArrays(GL_TRIANGLES,0,36);
+
     glBindVertexArray(0);
 }
 
@@ -36,11 +38,11 @@ void ShadowRenderer::initRenderData()
     unsigned int VBO;
     float vertices[] = {
             -0.5f, -0.5f, -0.5f,  0,0,-1,0.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  0,0,-1,1.0f, 1.0f,
             0.5f, -0.5f, -0.5f,  0,0,-1, 1.0f, 0.0f,
             0.5f,  0.5f, -0.5f,  0,0,-1,1.0f, 1.0f,
-            0.5f,  0.5f, -0.5f,  0,0,-1,1.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f, 0,0,-1, 0.0f, 1.0f,
             -0.5f, -0.5f, -0.5f,  0,0,-1,0.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f, 0,0,-1, 0.0f, 1.0f,
 
             -0.5f, -0.5f,  0.5f,  0,0,1,0.0f, 0.0f,
             0.5f, -0.5f,  0.5f,  0,0,1,1.0f, 0.0f,
@@ -57,11 +59,11 @@ void ShadowRenderer::initRenderData()
             -0.5f,  0.5f,  0.5f,  -1,0,0,1.0f, 0.0f,
 
             0.5f,  0.5f,  0.5f,  1,0,0,1.0f, 0.0f,
+            0.5f, -0.5f, -0.5f,  1,0,0,0.0f, 1.0f,
             0.5f,  0.5f, -0.5f,  1,0,0,1.0f, 1.0f,
             0.5f, -0.5f, -0.5f,  1,0,0,0.0f, 1.0f,
-            0.5f, -0.5f, -0.5f,  1,0,0,0.0f, 1.0f,
-            0.5f, -0.5f,  0.5f,  1,0,0,0.0f, 0.0f,
             0.5f,  0.5f,  0.5f,  1,0,0,1.0f, 0.0f,
+            0.5f, -0.5f,  0.5f,  1,0,0,0.0f, 0.0f,
 
             -0.5f, -0.5f, -0.5f,  0,-1,0,0.0f, 1.0f,
             0.5f, -0.5f, -0.5f,  0,-1,0,1.0f, 1.0f,
@@ -71,11 +73,11 @@ void ShadowRenderer::initRenderData()
             -0.5f, -0.5f, -0.5f,  0,-1,0,0.0f, 1.0f,
 
             -0.5f,  0.5f, -0.5f,  0,1,0,0.0f, 1.0f,
+            0.5f,  0.5f,  0.5f,  0,1,0,1.0f, 0.0f,
             0.5f,  0.5f, -0.5f,  0,1,0,1.0f, 1.0f,
             0.5f,  0.5f,  0.5f,  0,1,0,1.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  0,1,0,1.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  0,1,0,0.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  0,1,0,0.0f, 1.0f
+            -0.5f,  0.5f, -0.5f,  0,1,0,0.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  0,1,0,0.0f, 0.0f
     };
 
     glGenVertexArrays(1, &this->boxVAO);
