@@ -1,15 +1,14 @@
 #version 330 core
-out vec4 fragcolor;
+out vec4 frag_color;
 
 in vec3 n;
 in vec3 pos;
-in vec2 tcoord;
+in vec2 tex_coord;
 in vec4 pos_lightspace;
 
-uniform sampler2D cube_texture;
+uniform sampler2D box_texture;
 uniform sampler2D shadow_map;
 
-uniform vec3 box_color;
 uniform vec3 light_pos_0;
 uniform vec3 light_pos_1;
 uniform vec3 cam_pos;
@@ -32,7 +31,6 @@ float ShadowCalculation(vec4 pos_lightspace)
     }
     shadow/=9;
     return shadow;
-
 }
 
 void main()
@@ -49,8 +47,8 @@ void main()
         float angle=max(dot(R,V),0);
         spec=pow(angle,64);
     }
-    vec3 dcolor=vec3(texture(cube_texture,tcoord));
+    vec3 dcolor=vec3(texture(box_texture,tex_coord));
     vec3 color=0.2*(vec3(1.f)+lamb*dcolor)+(1-shadow)*(spec*dcolor+lamb*dcolor);
 
-    fragcolor=vec4(color,1);
+    frag_color=vec4(color,1);
 }

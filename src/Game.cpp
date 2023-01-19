@@ -8,11 +8,14 @@
 #include "QuadRenderer.h"
 #include "BoxOutliner.h"
 
-BoxRenderer* renderer;
+const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1200;
+
+BoxRenderer* brenderer;
 EnvironmentRenderer* erenderer;
 ShadowRenderer* srenderer;
 QuadRenderer* qrenderer;
 BoxOutliner* boutliner;
+Texture* depthMap;
 
 HopObject *Player;
 Camera* camera;
@@ -23,14 +26,19 @@ const float DETECTION_CONSTANT=0.2;
 Game::Game(unsigned int width, unsigned int height): State{GAME_ACTIVE}, Keys{}, Width{width}, Height{height}{}
 Game::~Game()
 {
-    delete renderer;
+    delete brenderer;
+    delete erenderer;
+    delete srenderer;
+    delete qrenderer;
+    delete boutliner;
+    glDeleteTextures(1,&depthMap->ID);
 }
 
 void Game::Init()
 {
     Resources::LoadShader("box_vertex.glsl", "box_fragment.glsl", "box");
     // set render-specific controls
-    renderer = new BoxRenderer(Resources::GetShader("box"));
+    brenderer = new BoxRenderer(Resources::GetShader("box"));
 
     Resources::LoadShader("shadow_vertex.glsl","shadow_fragment.glsl","shadow");
     srenderer= new ShadowRenderer(Resources::GetShader("shadow"));
@@ -44,12 +52,16 @@ void Game::Init()
     Resources::LoadShader("outline_vertex.glsl","outline_fragment.glsl","outliner");
     boutliner=new BoxOutliner(Resources::GetShader("outliner"));
 
+    depthMap=new Texture();
+    depthMap->GenerateDepth(SHADOW_WIDTH,SHADOW_HEIGHT);
+
     Resources::LoadTexture("wood_container.jpeg",false,"wood_container");
     Resources::LoadTexture("block_solid.png",false,"block_solid");
     Resources::LoadTexture("brick_wall.jpg",false,"brick_wall");
     Resources::LoadTexture("snow_ground.jpg",false,"snow_ground");
     Resources::LoadTexture("gift_wrap.jpg",false,"gift_wrap");
     Resources::LoadTexture("green_gift_wrap.jpg",false,"green_gift_wrap");
+    Resources::LoadTexture("grass.png",true,"grass");
     Resources::LoadTextureCubMap("PondWinter",false,"PondWinter");
 
     GameLevel test;
@@ -128,29 +140,17 @@ void Game::ProcessInput(float dt)
 void Game::Render()
 {
   if (this->State==GAME_ACTIVE){
-      glEnable(GL_DEPTH_TEST);
-
+      /* Preprocessing */
       unsigned int depthMapFBO;
       glGenFramebuffers(1, &depthMapFBO);
 
-      const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-      Texture depthMap;
-      glBindTexture(GL_TEXTURE_2D, depthMap.ID);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-                   SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
+      depthMap->Bind();
       glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap.ID, 0);
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap->ID, 0);
       glDrawBuffer(GL_NONE);
       glReadBuffer(GL_NONE);
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
       glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-      glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
       glClear(GL_DEPTH_BUFFER_BIT);
 
       glm::vec3 cen=glm::vec3(12.f,4.f,0.f);
@@ -160,26 +160,26 @@ void Game::Render()
 
       glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.f);
       glm::mat4 lightView = glm::lookAt(light_pos_0,cen,up);
+      glm::mat4 lightSpaceMatrix=lightProjection*lightView;
 
-      Resources::GetShader("shadow").Use();
-      Resources::GetShader("shadow").SetMatrix4("lightSpaceMatrix",lightProjection*lightView);
-      this->Levels[this->Level].Draw(*srenderer,camera->CameraPos,camera->GetViewMatrix(),camera->GetProjMatrix());
-      Player->Draw(*srenderer,camera->CameraPos,camera->GetViewMatrix(),camera->GetProjMatrix());
+      this->Levels[this->Level].Draw(*srenderer, lightSpaceMatrix);
+      Player->Draw(*srenderer,lightSpaceMatrix);
+
+      /* Render the scene */
+
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-// 2. then render scene as normal with shadow mapping (using depth map)
       glViewport(0, 0, 1600, 1200);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-      //qrenderer->Draw(depthMap);
+      //qrenderer->Draw(Resources::GetTexture("block_solid"));
+
 
       glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
       glStencilMask(0x00);
-      this->Levels[this->Level].Draw(*renderer,depthMap,lightProjection*lightView,camera->CameraPos,camera->GetViewMatrix(),camera->GetProjMatrix());
+      this->Levels[this->Level].Draw(*brenderer, *depthMap, lightSpaceMatrix, camera->CameraPos, camera->GetViewMatrix(), camera->GetProjMatrix());
 
       glStencilFunc(GL_ALWAYS, 1, 0xFF);
       glStencilMask(0xFF);
-      Player->Draw(*renderer,depthMap, lightProjection*lightView,camera->CameraPos,camera->GetViewMatrix(),camera->GetProjMatrix());
+      Player->Draw(*brenderer, *depthMap, lightSpaceMatrix, camera->CameraPos, camera->GetViewMatrix(), camera->GetProjMatrix());
 
       glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
       glStencilMask(0x00);
@@ -190,10 +190,12 @@ void Game::Render()
       glStencilFunc(GL_ALWAYS, 1, 0xFF);
       glEnable(GL_DEPTH_TEST);
 
-      glDeleteTextures(1,&depthMap.ID);
+      glDeleteFramebuffers(1,&depthMapFBO);
+
   }
-  Resources::GetShader("cubemap").Use();
-  erenderer->Draw(Resources::GetTexture("PondWinter"),camera->CameraPos,camera->GetViewMatrix(),camera->GetProjMatrix());
+  //Resources::GetShader("cubemap").Use();
+  //erenderer->Draw(Resources::GetTexture("PondWinter"),camera->CameraPos,camera->GetViewMatrix(),camera->GetProjMatrix());
+
 }
 
 //assume the bottom of the hop object is always a square

@@ -42,13 +42,13 @@ void GameLevel::Draw(BoxRenderer &renderer,Texture& depthMap,glm::mat4 light, gl
             iter.Draw(renderer,depthMap, light,camPos,viewMatrix,projMatrix);
 }
 
-void GameLevel::Draw(ShadowRenderer &renderer,glm::vec3 camPos,glm::mat4 viewMatrix, glm::mat4 projMatrix)
+void GameLevel::Draw(ShadowRenderer &renderer, glm::mat4& lightSpaceMatrix)
 {
     for(GameObject& iter: this->Walls)
-        iter.Draw(renderer,camPos,viewMatrix,projMatrix);
+        iter.Draw(renderer, lightSpaceMatrix);
     for (GameObject &iter : this->Cubes)
         if (!iter.Destroyed)
-            iter.Draw(renderer,camPos,viewMatrix,projMatrix);
+            iter.Draw(renderer, lightSpaceMatrix);
 }
 
 void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, unsigned int levelWidth, unsigned int levelHeight)

@@ -14,21 +14,14 @@ ShadowRenderer::~ShadowRenderer()
     glDeleteVertexArrays(1, &this->boxVAO);
 }
 
-void ShadowRenderer::DrawBox(Texture &texture,glm::vec3 camPos, glm::mat4 viewMatrix, glm::mat4 projMatrix, glm::vec3 position, glm::vec3 color, glm::vec3 size, float rotate)
+void ShadowRenderer::DrawBox(glm::mat4 & modelMatrix, glm::mat4 & lightSpaceMatrix)
 {
     this->sha.Use();
-
-    // prepare transformationszsszx
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, position);  // first transldate (transformations are: scale happens first, then rotation, and then final translation happens; reversed order)
-    model = glm::rotate(model, glm::radians(rotate), glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
-    model = glm::scale(model, size); // last scale
-
-    this->sha.SetMatrix4("modelMatrix",model);
+    this->sha.SetMatrix4("modelMatrix",modelMatrix);
+    this->sha.SetMatrix4("lightSpaceMatrix",lightSpaceMatrix);
 
     glBindVertexArray(this->boxVAO);
     glDrawArrays(GL_TRIANGLES,0,36);
-
     glBindVertexArray(0);
 }
 

@@ -7,12 +7,12 @@ uniform mat4 lightSpaceMatrix;
 
 layout (location=0) in vec3 position;
 layout (location=1) in vec3 normal;
-layout (location=2) in vec2 texcoord;
+layout (location=2) in vec2 texture_coord;
 
 
 out vec3 n;
 out vec3 pos;
-out vec2 tcoord;
+out vec2 tex_coord;
 out vec4 pos_lightspace;
 
 void main()
@@ -21,5 +21,5 @@ void main()
     gl_Position = projMatrix * viewMatrix *vec4(pos, 1.0);
     pos_lightspace=lightSpaceMatrix*vec4(pos,1.0);
     n = transpose(inverse(mat3(modelMatrix))) * normal;
-    tcoord=texcoord;
+    tex_coord=texture_coord;
 }

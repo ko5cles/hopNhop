@@ -7,6 +7,10 @@ Texture::Texture(): Width{0}, Height{0}, Internal_Format{GL_RGB}, Image_Format{G
 {
     glGenTextures(1, &this->ID);
 }
+//Texture::~Texture()
+//{
+//    glDeleteTextures(1,&this->ID);
+//}
 
 void Texture::Generate(unsigned int width, unsigned int height, unsigned char* data)
 {
@@ -14,17 +18,34 @@ void Texture::Generate(unsigned int width, unsigned int height, unsigned char* d
     this->Height = height;
     // create Texture
     glBindTexture(GL_TEXTURE_2D, this->ID);
-    if (data== nullptr)
-        glTexImage2D(GL_TEXTURE_2D, 0, this->Internal_Format, width, height, 0, this->Image_Format, GL_FLOAT, 0);
-    else
-        glTexImage2D(GL_TEXTURE_2D, 0, this->Internal_Format, width, height, 0, this->Image_Format, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, this->Internal_Format, width, height, 0, this->Image_Format, GL_UNSIGNED_BYTE, data);
     // set Texture wrap and filter modes
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, this->Wrap_S);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, this->Wrap_T);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, this->Filter_Min);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, this->Filter_Max);
     // unbind texture
-    glBindTexture(GL_TEXTURE_2D, 0);
+    //glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Texture::GenerateDepth(unsigned int width, unsigned int height) {
+    this->Width = width;
+    this->Height = height;
+    this->Filter_Max=GL_NEAREST;
+    this->Filter_Min=GL_NEAREST;
+    this->Internal_Format=GL_DEPTH_COMPONENT;
+    this->Image_Format=GL_DEPTH_COMPONENT;
+    this->Wrap_S=GL_CLAMP_TO_BORDER;
+    this->Wrap_T=GL_CLAMP_TO_BORDER;
+    glBindTexture(GL_TEXTURE_2D, this->ID);
+    glTexImage2D(GL_TEXTURE_2D, 0, this->Internal_Format,
+                 width, height, 0, this->Image_Format, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, this->Filter_Min);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, this->Filter_Max);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, this->Wrap_S);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, this->Wrap_T);
+    // unbind texture
+    //glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Texture::Bind() const
@@ -54,3 +75,4 @@ void Texture::GenerateCubeMap(unsigned int width, unsigned int height, std::vect
 void Texture::BindCubeMap() const {
     glBindTexture(GL_TEXTURE_CUBE_MAP, this->ID);
 }
+

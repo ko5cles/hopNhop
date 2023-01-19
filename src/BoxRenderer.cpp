@@ -5,7 +5,7 @@
 
 BoxRenderer::BoxRenderer(Shader& sha)
 {
-    this->sha = sha;
+    this->Program = sha;
     this->initRenderData();
 
 }
@@ -16,28 +16,20 @@ BoxRenderer::~BoxRenderer()
     glDeleteBuffers(1, &this->boxVBO);
 }
 
-void BoxRenderer::DrawBox(Texture &texture, Texture& depthMap,glm::mat4 light,glm::vec3 camPos, glm::mat4 viewMatrix, glm::mat4 projMatrix, glm::vec3 position, glm::vec3 color, glm::vec3 size, float rotate)
+void BoxRenderer::DrawBox(Texture &texture, Texture& depthMap,glm::mat4& lightSpaceMatrix,glm::vec3& camPos,glm::mat4& modelMatrix, glm::mat4& viewMatrix, glm::mat4& projMatrix)
 {
-    // prepare transformations
     glEnable(GL_CULL_FACE);
 
-    this->sha.Use();
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, position);  // first transldate (transformations are: scale happens first, then rotation, and then final translation happens; reversed order)
-    model = glm::rotate(model, glm::radians(rotate), glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
-    model = glm::scale(model, size); // last scale
+    this->Program.Use();
 
-    this->sha.SetMatrix4("modelMatrix",model);
-    this->sha.SetMatrix4("viewMatrix",viewMatrix);
-    this->sha.SetMatrix4("projMatrix",projMatrix);
-    this->sha.SetMatrix4("lightSpaceMatrix",light);
+    this->Program.SetMatrix4("modelMatrix", modelMatrix);
+    this->Program.SetMatrix4("viewMatrix", viewMatrix);
+    this->Program.SetMatrix4("projMatrix", projMatrix);
+    this->Program.SetMatrix4("lightSpaceMatrix", lightSpaceMatrix);
 
-    this->sha.SetVector3f("light_pos_0",light_pos_0);
-    this->sha.SetVector3f("light_pos_1",light_pos_1);
-
-    // render textured quad
-    this->sha.SetVector3f("box_color",color);
-    this->sha.SetVector3f("cam_pos",camPos);
+    this->Program.SetVector3f("light_pos_0", light_pos_0);
+    this->Program.SetVector3f("light_pos_1", light_pos_1);
+    this->Program.SetVector3f("cam_pos", camPos);
 
     glActiveTexture(GL_TEXTURE0);
     texture.Bind();
@@ -45,12 +37,13 @@ void BoxRenderer::DrawBox(Texture &texture, Texture& depthMap,glm::mat4 light,gl
     glActiveTexture(GL_TEXTURE1);
     depthMap.Bind();
 
-    this->sha.SetInteger("cube_texture",0);
-    this->sha.SetInteger("shadow_map",1);
+    this->Program.SetInteger("box_texture", 0);
+    this->Program.SetInteger("shadow_map", 1);
 
     glBindVertexArray(BoxRenderer::boxVAO);
     glDrawArrays(GL_TRIANGLES,0,36);
     glBindVertexArray(0);
+
     glDisable(GL_CULL_FACE);
 }
 

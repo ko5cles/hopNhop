@@ -23,13 +23,13 @@ public:
     glm::mat4 modelMatrix=glm::mat4(1.0f);
     bool        IsSolid;
     bool        Destroyed;
-    Texture   Box;
+    Texture   BoxTexture;
     // constructor(s)
     GameObject();
     GameObject(glm::vec3 pos, glm::vec3 size, Texture box);
     // draw sprite
     virtual void Draw(BoxRenderer&, Texture& depthMap, glm::mat4 light, glm::vec3 camPos, glm::mat4 viewMatrix, glm::mat4 projMatrix);
-    virtual void Draw(ShadowRenderer&, glm::vec3 camPos, glm::mat4 viewMatrix, glm::mat4 projMatrix);
+    virtual void Draw(ShadowRenderer& srenderer, glm::mat4& lightSpaceMatrix);
     virtual void Draw(float scale, glm::vec3 color, BoxOutliner& renderer, const glm::mat4& viewMatrix, const glm::mat4& projMatrix);
 };
 

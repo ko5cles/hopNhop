@@ -27,7 +27,7 @@ public:
     void Load(const char *file, unsigned int levelWidth, unsigned int levelHeight);
     // render level
     void Draw(BoxRenderer &renderer,Texture& depthMap, glm::mat4 light, glm::vec3 camPos, glm::mat4 viewMatrix, glm::mat4 projMatrix);
-    void Draw(ShadowRenderer &renderer,glm::vec3 camPos, glm::mat4 viewMatrix, glm::mat4 projMatrix);
+    void Draw(ShadowRenderer &renderer, glm::mat4& lightSpaceMatrix);
 private:
     // initialize level from tile data
     void init(std::vector<std::vector<unsigned int>> tileData, unsigned int levelWidth, unsigned int levelHeight);

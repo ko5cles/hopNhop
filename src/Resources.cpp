@@ -74,9 +74,9 @@ Shader Resources::loadShaderFromFile(const std::string & vShaderFile,const std::
     {
         std::cout << "ERROR::SHADER: Failed to read shader files" << std::endl;
     }
-    Shader sha;
-    sha.Compile(vertexCode.c_str(),fragmentCode.c_str());
-    return sha;
+    Shader Program;
+    Program.Compile(vertexCode.c_str(), fragmentCode.c_str());
+    return Program;
 }
 
 Texture Resources:: loadTextureFromFile(const char *file, bool alpha){

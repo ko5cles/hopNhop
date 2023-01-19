@@ -30,12 +30,10 @@ class ShadowRenderer{
 public:
     ShadowRenderer(Shader& sha);
     ~ShadowRenderer();
-    void DrawBox(Texture &texture,glm::vec3 camPos, glm::mat4 viewMatrix, glm::mat4 projMatrix, glm::vec3 position,
-                 glm::vec3 color= glm::vec3(1.0f),glm::vec3 size = glm::vec3(1.0f), float rotate = 0.0f);
+    void DrawBox(glm::mat4& modelMatrix, glm::mat4& lightSpaceMatrix);
 private:
     Shader sha;
     unsigned int boxVAO;
-
     void initRenderData();
 };
 
